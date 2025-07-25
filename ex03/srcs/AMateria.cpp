@@ -7,6 +7,7 @@ AMateria::AMateria() : _type("?") {
 }
 
 AMateria::AMateria(const AMateria& other) {
+    (void) other;
     //_type = other._type;
     //std::cout << "🔮 Copy of amateria" << std::endl;
 }
@@ -25,6 +26,7 @@ AMateria::~AMateria() {
 
 AMateria& AMateria::operator=(const AMateria& other) {
     if (this != &other) {
+        (void) other;
         //_type = other._type;
         //std::cout << "🔮 Affectation = of amateria" << std::endl;
     }

@@ -5,50 +5,72 @@
 
 #include <iostream>
 
+void printSeparator(std::string title) {
+	std::cout << "\n🔻🔻🔻 " << title << " 🔻🔻🔻\n" << std::endl;
+}
+
 int main() {
-	std::cout << "🔧 Initialisation de la source de materia..." << std::endl;
+	printSeparator("INITIALISATION");
 	IMateriaSource* src = new MateriaSource();
-
 	src->learnMateria(new Ice());
 	src->learnMateria(new Cure());
-	// Test : trop de learnMateria
 	src->learnMateria(new Ice());
 	src->learnMateria(new Cure());
-	src->learnMateria(new Cure()); // Ignoré car inventaire plein
 
-	std::cout << "\n🧙 Création du personnage 'me'..." << std::endl;
-	ICharacter* me = new Character("me");
+	// Inventaire plein → devrait delete la materia automatiquement
+	src->learnMateria(new Cure()); // 🔥 test overflow
 
-	std::cout << "\n🧪 Création de materia depuis la source..." << std::endl;
-	AMateria* tmp1 = src->createMateria("ice");
-	AMateria* tmp2 = src->createMateria("cure");
-	AMateria* tmp3 = src->createMateria("fire"); // Inconnue
+	printSeparator("CREATION DE PERSONNAGES");
+	ICharacter* me = new Character("Hero");
+	ICharacter* dummy = new Character("Dummy");
 
-	me->equip(tmp1); // slot 0
-	me->equip(tmp2); // slot 1
-	me->equip(tmp3); // NULL, rien ne se passe
+	printSeparator("CREATION DE MATERIAS");
+	AMateria* ice = src->createMateria("ice");
+	AMateria* cure = src->createMateria("cure");
+	AMateria* ghost = src->createMateria("ghost"); // 🔥 inconnu, NULL
 
-	std::cout << "\n🧍 Création du personnage 'bob'..." << std::endl;
-	ICharacter* bob = new Character("bob");
+	me->equip(ice);      // slot 0
+	me->equip(cure);     // slot 1
+	me->equip(NULL);     // 🔥 test de protection
+	me->equip(ghost);
+	me->equip(src->createMateria("ice"));  // slot 2
+	me->equip(src->createMateria("cure")); // slot 3
+	me->equip(src->createMateria("cure")); // 🔥 test overflow inventaire
 
-	std::cout << "\n✨ Utilisation des Materias..." << std::endl;
-	me->use(0, *bob); // ice
-	me->use(1, *bob); // cure
-	me->use(2, *bob); // vide
+	printSeparator("UTILISATION DES MATERIAS");
+	me->use(0, *dummy);  // ice
+	me->use(1, *dummy);  // cure
+	me->use(2, *dummy);  // ice
+	me->use(3, *dummy);  // cure
+	me->use(4, *dummy);  // 🔥 index invalide
+	me->use(-1, *dummy); // 🔥 index invalide
 
-	std::cout << "\n❌ Unequip de la materia slot 1..." << std::endl;
-	me->unequip(1); // Ne delete pas la materia
-	delete tmp2;     // À gérer manuellement
+	printSeparator("UNEQUIP & RÉUTILISATION");
+	me->unequip(1);      // remove cure
+	me->use(1, *dummy);  // 🔥 slot vide
+	me->equip(src->createMateria("ice"));  // reprendre un slot libre
+	me->use(1, *dummy);  // ice
 
-	std::cout << "\n🧬 Test de copie profonde..." << std::endl;
-	Character copy = *(dynamic_cast<Character*>(me));
-	copy.use(0, *bob); // ice
-	copy.use(1, *bob); // slot 1 est vide car tmp2 a été unequip
+	printSeparator("COPIE PROFONDE");
+	Character deepCopy = *(dynamic_cast<Character*>(me));
+	deepCopy.use(0, *dummy); // ice
+	deepCopy.use(1, *dummy); // ice (nouvel objet)
+	deepCopy.unequip(0);
+	deepCopy.use(0, *dummy); // 🔥 vide
 
-	std::cout << "\n🧹 Nettoyage..." << std::endl;
-	delete bob;
+	printSeparator("ASSIGNATION =");
+	Character assigned("Newbie");
+	assigned = *(dynamic_cast<Character*>(me));
+	assigned.use(0, *dummy); // ice
+	assigned.unequip(0);
+	assigned.use(0, *dummy); // 🔥 vide
+
+	printSeparator("CLEANUP");
 	delete me;
+	delete dummy;
 	delete src;
 
+	std::cout << "\n✅ Fin du test : aucune fuite mémoire attendue." << std::endl;
 	return 0;
 }
+

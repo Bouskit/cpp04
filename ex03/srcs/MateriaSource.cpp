@@ -56,11 +56,13 @@ void MateriaSource::learnMateria(AMateria *materia) {
     for (int i = 0; i < 4; i++) {
         if (!_inventory[i]) {
             _inventory[i] = materia;
-            std::cout << "📚 Learned new materia : " << materia->getType() << "in slot : " << i << std::endl;
+            std::cout << "📚 Learned new materia : " << materia->getType() << " in slot : " << i << std::endl;
             return ;
         }
     }
     std::cout << "⚠️ Inventory full, cannot learn new materia." << std::endl;
+
+    delete materia;
 }
 
 AMateria* MateriaSource::createMateria(std::string const & type) {

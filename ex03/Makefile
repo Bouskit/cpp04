@@ -9,7 +9,7 @@ OBJ_DIR   := objs
 
 # ─── SOURCES & OBJETS ────────────────────────────────────────────────────
 
-SRC_NAMES := main.cpp AMateria.cpp Ice.cpp Cure.cpp ICharacter.cpp IMateriaSource.cpp
+SRC_NAMES := main.cpp AMateria.cpp Ice.cpp Cure.cpp Character.cpp MateriaSource.cpp
 SRC       := $(addprefix $(SRC_DIR)/, $(SRC_NAMES))
 OBJ       := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC))
 
